@@ -1,3 +1,8 @@
+Small iot demonstration using 2 RaspberryPi ZeroW's reading sensor data
+and propagating it to microservices - probably using socket.io.
+This is a NodeJS project using mainly Cylon.js.
+
+
 # NodeJS installation guide for rasp0 / armv61:
 first check
 1. uname -m
@@ -10,7 +15,7 @@ for appropriate version. then:
 5. sudo cp -R * /usr/local/
 6. export PATH=$PATH:/usr/local/bin
 
-# install BCM 2835 LIB:
+# install BCM 2835 LIB for DHT22 sensor:
 1. wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.56.tar.gz
 2. tar -zxvf bcm2835-1.xx.tar.gz
 3. cd bcm2835-1.xx
