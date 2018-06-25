@@ -1,0 +1,14 @@
+{
+  "name": "SGSE_IOT_DEMO",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "sudo node ./src/index.js"
+  },
+  "dependencies": {
+    "cylon": "^1.3.0",
+    "cylon-raspi": "^0.20.1",
+    "cylon-gpio": "^0.30.1",
+    "cylon-i2c": "^0.26.1"
+  }
+}
