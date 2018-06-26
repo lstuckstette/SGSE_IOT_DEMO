@@ -33,4 +33,5 @@ for appropriate version. then:
 2. cd SGSE_IOT_DEMO
 3. npm install
 4. npm start
-5. profit
+5. ?
+6. profit
