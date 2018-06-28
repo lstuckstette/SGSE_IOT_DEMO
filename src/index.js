@@ -62,58 +62,6 @@ ioClient.on("disconnect", () => {
     console.log("socket.io disconnected!")
 });
 
-/*
-let client = new WebSocketClient();
-client.on('connectFailed', function (error) {
-    console.log('Connect Error: ' + error.toString());
-});
-client.on('connect', function (connection) {
-    console.log('WebSocket Client Connected');
-    connection.on('error', function (error) {
-        console.log("Connection Error: " + error.toString());
-    });
-    connection.on('close', function () {
-        console.log('WebSocket Connection Closed');
-    });
-    connection.on('message', function (message) {
-        //interpret request and send response:
-        let request = JSON.parse(message);
-        let retval = undefined;
-        switch (request.method) {
-            case "readCalculatedTemperature" :
-                retval = readCalculatedTemperature();
-                client.sendUTF(JSON.stringify({response: retval}));
-                break;
-            case "readCalculatedLux" :
-                retval = readCalculatedLux();
-                client.sendUTF(JSON.stringify({response: retval}));
-                break;
-            case "readDHT22Temperature" :
-                retval = readDHT22Temperature();
-                client.sendUTF(JSON.stringify({response: retval}));
-                break;
-            case "readDHT22Humidity" :
-                retval = readDHT22Humidity();
-                client.sendUTF(JSON.stringify({response: retval}));
-                break;
-            case "setLED":
-                setLED(request.data);
-                client.sendUTF(JSON.stringify({response: "OK"}));
-                break;
-            case "getLED":
-                retval = getLED();
-                client.sendUTF(JSON.stringify({response: retval}));
-                break;
-            default:
-                client.sendUTF(JSON.stringify({error: "Unrecognised request!"}));
-        }
-    });
-    //send available 'services'
-    client.sendUTF(JSON.stringify(availableMethods));
-});
-client.connect(serverAddress);
-*/
-
 async function detectAvailableMethods() {
     return new Promise((resolve, reject) => {
         availableMethods.methods.push("setLED");
