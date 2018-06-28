@@ -1,9 +1,11 @@
 let Cylon = require("cylon");
+let W3CWebSocket = require('websocket').w3cwebsocket;
 let dht22 = require("node-dht-sensor");
 let mcp3008 = require("./mcp3008");
 let adc = new mcp3008();
 let tempChannel = 1;
 let lightChannel = 2;
+let availableMethods = {methods: []};
 
 console.log("Started:");
 
@@ -17,13 +19,48 @@ Cylon.robot({
     },
 
     work: function (my) {
-        every((1).second(), my.led.toggle);
-        //every((2).second(), readDHT22);
-        every((1).second(), readCalculatedTemperature);
-        every((1).second(), readCalculatedLux);
+        detectAvailableMethods().then(() => {
+                console.log(JSON.stringify(availableMethods));
+
+                every((1).second(), my.led.toggle);
+                //every((2).second(), readDHT22);
+                //every((1).second(), readCalculatedTemperature);
+                //every((1).second(), readCalculatedLux);}
+            }
+        );
+
 
     }
-}).start();
+});
+
+Cylon.start();
+
+
+async function detectAvailableMethods() {
+    return new Promise((resolve, reject) => {
+        availableMethods.methods.push("setLED");
+        readDHT22Temperature().catch((err) => {
+            availableMethods.methods.push("readCalculatedTemperature");
+            availableMethods.methods.push("readCalculatedLux");
+            resolve();
+        }).then((data, err) => {
+              if (data !== undefined) {
+                availableMethods.methods.push("readDHT22Temperature");
+                availableMethods.methods.push("readDHT22Humidity");
+            }
+            resolve();
+        });
+    });
+}
+
+function setLED(state) {
+    if (state) {
+        Cylon.robot.led.turn_on();
+    } else {
+        Cylon.robot.led.turn_off();
+    }
+
+}
 
 async function readRawTemperature() {
     let value = await(adc.read(tempChannel));

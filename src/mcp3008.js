@@ -34,13 +34,16 @@ function read(channel) {
     });
 }
 
+function isAvailable(){
+    return spi !== undefined;
+}
+
 
 var Mcp3008 = function (dev) {
     device = dev || device;
     spi = SPI.initialize(device);
-
     this.read = read;
-
+    this.isAvailable = isAvailable;
 
     this.close = function () {
         spi.close();

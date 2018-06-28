@@ -29,6 +29,7 @@ for appropriate version. then:
 
 
 # How to run this project:
+1. sudo raspi-config //activate spi
 1. git clone https://github.com/lstuckstette/SGSE_IOT_DEMO
 2. cd SGSE_IOT_DEMO
 3. npm install
