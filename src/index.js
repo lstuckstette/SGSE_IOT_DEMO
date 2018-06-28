@@ -13,11 +13,14 @@ let availableMethods = {methods: []};
 
 console.log("Started:");
 
+/*
 detectAvailableMethods().then(() => {
     console.log(JSON.stringify(availableMethods));
-});
 
-let ioClient = io.connect(serverAddress);
+
+});
+*/
+
 
 function run() {
     if (!ioClient.connected) {
@@ -27,54 +30,75 @@ function run() {
 
 //setInterval(run, 5000);
 
-
+let ioClient = io.connect(serverAddress);
 ioClient.on("connect", () => {
     console.log("socket.io connected!");
-    ioClient.emit("register", availableMethods);
+    detectAvailableMethods().then((data, err) => {
+        ioClient.emit("register", availableMethods);
+    });
 });
 
 
-ioClient.on("request", (data) => {
+ioClient.on("request", async (data) => {
     //interpret request and send response:
     let retval = undefined;
-    console.log("got request:"+ data.method);
-    switch (data.method) {
+    switch (data.method.toString()) {
         case "readCalculatedTemperature" :
-            retval = readCalculatedTemperature();
+            console.log("got readCTemp req!");
+            retval = await readCalculatedTemperature();
             ioClient.emit('responseCTemp', {response: retval});
             break;
         case "readCalculatedLux" :
-            retval = readCalculatedLux();
+            console.log("got readCLux req!");
+            retval = await readCalculatedLux();
             ioClient.emit('responseCLux', {response: retval});
             break;
         case "readDHT22Temperature" :
-            retval = readDHT22Temperature();
+            console.log("got readDTemp req!");
+            retval = await readDHT22Temperature();
             ioClient.emit('responseDTemp', {response: retval});
             break;
         case "readDHT22Humidity" :
-            retval = readDHT22Humidity();
+            console.log("got readDHum req!");
+            retval = await readDHT22Humidity();
             ioClient.emit('responseDHum', {response: retval});
             break;
         case "setLED":
+            console.log("got setLed req!");
             if (data !== undefined)
                 setLED(data.data);
             ioClient.emit('responseSLED', {response: "OK"});
             break;
         case "getLED":
+            console.log("got readLed req!");
             retval = getLED();
             ioClient.emit('responseLED', {response: retval});
             break;
         default:
-            client.emit("error", {error: "Unrecognised request! "+data.method});
+            client.emit("error", {error: "Unrecognised request! " + data.method});
     }
 });
 
 ioClient.on("disconnect", () => {
     console.log("socket.io disconnected!")
+    let interval = setInterval(() => {
+        console.log("retrying connection...");
+        if (ioClient.connected) {
+            clearInterval(interval);
+            return;
+        }
+        ioClient.connect()
+    }, 2000);
 });
+
+function reconnect() {
+
+}
 
 async function detectAvailableMethods() {
     return new Promise((resolve, reject) => {
+
+
         availableMethods.methods.push("setLED");
         availableMethods.methods.push("getLED");
         readDHT22Temperature().catch((err) => {
