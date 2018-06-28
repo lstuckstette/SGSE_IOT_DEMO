@@ -38,27 +38,27 @@ ioClient.on("request", (data) => {
     switch (data.method) {
         case "readCalculatedTemperature" :
             retval = readCalculatedTemperature();
-            client.emit('response', {response: retval});
+            client.emit('responseCTemp', {response: retval});
             break;
         case "readCalculatedLux" :
             retval = readCalculatedLux();
-            client.emit('response', {response: retval});
+            client.emit('responseCLux', {response: retval});
             break;
         case "readDHT22Temperature" :
             retval = readDHT22Temperature();
-            client.emit('response', {response: retval});
+            client.emit('responseDTemp', {response: retval});
             break;
         case "readDHT22Humidity" :
             retval = readDHT22Humidity();
-            client.emit('response', {response: retval});
+            client.emit('responseDHum', {response: retval});
             break;
         case "setLED":
             setLED(data.data);
-            client.emit('response', {response: "OK"});
+            client.emit('responseSLED', {response: "OK"});
             break;
         case "getLED":
             retval = getLED();
-            client.emit('response', {response: retval});
+            client.emit('responseLED', {response: retval});
             break;
         default:
             client.emit("error", {error: "Unrecognised request!"});
