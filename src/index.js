@@ -17,7 +17,7 @@ detectAvailableMethods().then(() => {
     console.log(JSON.stringify(availableMethods));
 });
 
-function run(){
+function run() {
 
 }
 
@@ -29,7 +29,6 @@ ioClient.on("connect", () => {
     console.log("socket.io connected!");
     ioClient.emit("register", availableMethods);
 });
-
 
 
 ioClient.on("request", (data) => {
@@ -53,7 +52,8 @@ ioClient.on("request", (data) => {
             client.emit('responseDHum', {response: retval});
             break;
         case "setLED":
-            setLED(data.data);
+            if (data !== undefined)
+                setLED(data.data);
             client.emit('responseSLED', {response: "OK"});
             break;
         case "getLED":
@@ -63,6 +63,10 @@ ioClient.on("request", (data) => {
         default:
             client.emit("error", {error: "Unrecognised request!"});
     }
+});
+
+data.response.forEach((element) => {
+    socket.emit('request', {method: element});
 });
 
 ioClient.on("disconnect", () => {
@@ -112,7 +116,7 @@ async function readCalculatedTemperature() {
     let volts = (rawData / 1023) * 3.3;
     let ohms = ((3.3 * 10000) - (volts * 10000)) / volts;
     let lnohms = Math.log(ohms); // = ln(x)
-/**/
+    /**/
     // R@25°C=8600, R (-6.2%/C @ 25C) Mil Ratio X
     let a = 0.001860902033483;
     let b = 0.000156942702230;
