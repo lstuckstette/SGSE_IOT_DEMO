@@ -5,7 +5,7 @@ const WebSocketClient = require('websocket').client;
 const io = require('socket.io-client');
 
 let led = new Gpio(17, 'out');
-let serverAddress = 'ws://derpington.de:8080';
+let serverAddress = 'ws://ec2-18-191-175-39.us-east-2.compute.amazonaws.com:4811';
 let adc = new mcp3008();
 let tempChannel = 1;
 let lightChannel = 2;
@@ -17,13 +17,20 @@ detectAvailableMethods().then(() => {
     console.log(JSON.stringify(availableMethods));
 });
 
+function run(){
+
+}
+
 //setLED(true);
 
 let ioClient = io.connect(serverAddress);
+
 ioClient.on("connect", () => {
     console.log("socket.io connected!");
-    ioClient.emit("availableMethods", availableMethods);
+    ioClient.emit("register", availableMethods);
 });
+
+
 
 ioClient.on("request", (data) => {
     //interpret request and send response:
@@ -105,7 +112,7 @@ async function readCalculatedTemperature() {
     let volts = (rawData / 1023) * 3.3;
     let ohms = ((3.3 * 10000) - (volts * 10000)) / volts;
     let lnohms = Math.log(ohms); // = ln(x)
-
+/**/
     // R@25°C=8600, R (-6.2%/C @ 25C) Mil Ratio X
     let a = 0.001860902033483;
     let b = 0.000156942702230;
