@@ -17,13 +17,16 @@ detectAvailableMethods().then(() => {
     console.log(JSON.stringify(availableMethods));
 });
 
-function run() {
+let ioClient = io.connect(serverAddress);
 
+function run() {
+    if (!ioClient.connected) {
+        ioClient = io.connect(serverAddress);
+    }
 }
 
-//setLED(true);
+//setInterval(run, 5000);
 
-let ioClient = io.connect(serverAddress);
 
 ioClient.on("connect", () => {
     console.log("socket.io connected!");
@@ -34,39 +37,36 @@ ioClient.on("connect", () => {
 ioClient.on("request", (data) => {
     //interpret request and send response:
     let retval = undefined;
+    console.log("got request:"+ data.method);
     switch (data.method) {
         case "readCalculatedTemperature" :
             retval = readCalculatedTemperature();
-            client.emit('responseCTemp', {response: retval});
+            ioClient.emit('responseCTemp', {response: retval});
             break;
         case "readCalculatedLux" :
             retval = readCalculatedLux();
-            client.emit('responseCLux', {response: retval});
+            ioClient.emit('responseCLux', {response: retval});
             break;
         case "readDHT22Temperature" :
             retval = readDHT22Temperature();
-            client.emit('responseDTemp', {response: retval});
+            ioClient.emit('responseDTemp', {response: retval});
             break;
         case "readDHT22Humidity" :
             retval = readDHT22Humidity();
-            client.emit('responseDHum', {response: retval});
+            ioClient.emit('responseDHum', {response: retval});
             break;
         case "setLED":
             if (data !== undefined)
                 setLED(data.data);
-            client.emit('responseSLED', {response: "OK"});
+            ioClient.emit('responseSLED', {response: "OK"});
             break;
         case "getLED":
             retval = getLED();
-            client.emit('responseLED', {response: retval});
+            ioClient.emit('responseLED', {response: retval});
             break;
         default:
-            client.emit("error", {error: "Unrecognised request!"});
+            client.emit("error", {error: "Unrecognised request! "+data.method});
     }
-});
-
-data.response.forEach((element) => {
-    socket.emit('request', {method: element});
 });
 
 ioClient.on("disconnect", () => {
