@@ -1,7 +1,11 @@
-let Cylon = require("cylon");
-let W3CWebSocket = require('websocket').w3cwebsocket;
-let dht22 = require("node-dht-sensor");
-let mcp3008 = require("./mcp3008");
+const Gpio = require('onoff').Gpio;
+const dht22 = require("node-dht-sensor");
+const mcp3008 = require("./mcp3008");
+const WebSocketClient = require('websocket').client;
+const io = require('socket.io-client');
+
+let led = new Gpio(17, 'out');
+let serverAddress = 'ws://derpington.de:8080';
 let adc = new mcp3008();
 let tempChannel = 1;
 let lightChannel = 2;
@@ -9,42 +13,117 @@ let availableMethods = {methods: []};
 
 console.log("Started:");
 
-Cylon.robot({
-    connections: {
-        raspi: {adaptor: 'raspi'}
-    },
+detectAvailableMethods().then(() => {
+    console.log(JSON.stringify(availableMethods));
+});
 
-    devices: {
-        led: {driver: 'led', pin: 11}
-    },
+//setLED(true);
 
-    work: function (my) {
-        detectAvailableMethods().then(() => {
-                console.log(JSON.stringify(availableMethods));
+let ioClient = io.connect(serverAddress);
+ioClient.on("connect", () => {
+    console.log("socket.io connected!");
+    ioClient.emit("availableMethods", availableMethods);
+});
 
-                every((1).second(), my.led.toggle);
-                //every((2).second(), readDHT22);
-                //every((1).second(), readCalculatedTemperature);
-                //every((1).second(), readCalculatedLux);}
-            }
-        );
-
-
+ioClient.on("request", (data) => {
+    //interpret request and send response:
+    let retval = undefined;
+    switch (data.method) {
+        case "readCalculatedTemperature" :
+            retval = readCalculatedTemperature();
+            client.emit('response', {response: retval});
+            break;
+        case "readCalculatedLux" :
+            retval = readCalculatedLux();
+            client.emit('response', {response: retval});
+            break;
+        case "readDHT22Temperature" :
+            retval = readDHT22Temperature();
+            client.emit('response', {response: retval});
+            break;
+        case "readDHT22Humidity" :
+            retval = readDHT22Humidity();
+            client.emit('response', {response: retval});
+            break;
+        case "setLED":
+            setLED(data.data);
+            client.emit('response', {response: "OK"});
+            break;
+        case "getLED":
+            retval = getLED();
+            client.emit('response', {response: retval});
+            break;
+        default:
+            client.emit("error", {error: "Unrecognised request!"});
     }
 });
 
-Cylon.start();
+ioClient.on("disconnect", () => {
+    console.log("socket.io disconnected!")
+});
 
+/*
+let client = new WebSocketClient();
+client.on('connectFailed', function (error) {
+    console.log('Connect Error: ' + error.toString());
+});
+client.on('connect', function (connection) {
+    console.log('WebSocket Client Connected');
+    connection.on('error', function (error) {
+        console.log("Connection Error: " + error.toString());
+    });
+    connection.on('close', function () {
+        console.log('WebSocket Connection Closed');
+    });
+    connection.on('message', function (message) {
+        //interpret request and send response:
+        let request = JSON.parse(message);
+        let retval = undefined;
+        switch (request.method) {
+            case "readCalculatedTemperature" :
+                retval = readCalculatedTemperature();
+                client.sendUTF(JSON.stringify({response: retval}));
+                break;
+            case "readCalculatedLux" :
+                retval = readCalculatedLux();
+                client.sendUTF(JSON.stringify({response: retval}));
+                break;
+            case "readDHT22Temperature" :
+                retval = readDHT22Temperature();
+                client.sendUTF(JSON.stringify({response: retval}));
+                break;
+            case "readDHT22Humidity" :
+                retval = readDHT22Humidity();
+                client.sendUTF(JSON.stringify({response: retval}));
+                break;
+            case "setLED":
+                setLED(request.data);
+                client.sendUTF(JSON.stringify({response: "OK"}));
+                break;
+            case "getLED":
+                retval = getLED();
+                client.sendUTF(JSON.stringify({response: retval}));
+                break;
+            default:
+                client.sendUTF(JSON.stringify({error: "Unrecognised request!"}));
+        }
+    });
+    //send available 'services'
+    client.sendUTF(JSON.stringify(availableMethods));
+});
+client.connect(serverAddress);
+*/
 
 async function detectAvailableMethods() {
     return new Promise((resolve, reject) => {
         availableMethods.methods.push("setLED");
+        availableMethods.methods.push("getLED");
         readDHT22Temperature().catch((err) => {
             availableMethods.methods.push("readCalculatedTemperature");
             availableMethods.methods.push("readCalculatedLux");
             resolve();
         }).then((data, err) => {
-              if (data !== undefined) {
+            if (data !== undefined) {
                 availableMethods.methods.push("readDHT22Temperature");
                 availableMethods.methods.push("readDHT22Humidity");
             }
@@ -55,11 +134,15 @@ async function detectAvailableMethods() {
 
 function setLED(state) {
     if (state) {
-        Cylon.robot.led.turn_on();
+        led.writeSync(1);
     } else {
-        Cylon.robot.led.turn_off();
+        led.writeSync(0);
     }
 
+}
+
+function getLED() {
+    return led.readSync();
 }
 
 async function readRawTemperature() {
