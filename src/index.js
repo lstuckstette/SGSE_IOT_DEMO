@@ -9,7 +9,7 @@ let serverAddress = 'ws://ec2-18-191-175-39.us-east-2.compute.amazonaws.com:4811
 let adc = new mcp3008();
 let tempChannel = 1;
 let lightChannel = 2;
-let availableMethods = {methods: []};
+let availableMethods = {methods: [], deviceID: undefined};
 
 console.log("Started:");
 
@@ -34,6 +34,7 @@ let ioClient = io.connect(serverAddress);
 ioClient.on("connect", () => {
     console.log("socket.io connected!");
     detectAvailableMethods().then((data, err) => {
+        console.log("AM: "+availableMethods.methods+" ID: "+availableMethods.deviceID);
         ioClient.emit("register", availableMethods);
     });
 });
@@ -104,11 +105,13 @@ async function detectAvailableMethods() {
         readDHT22Temperature().catch((err) => {
             availableMethods.methods.push("readCalculatedTemperature");
             availableMethods.methods.push("readCalculatedLux");
+            availableMethods.deviceID = 1;
             resolve();
         }).then((data, err) => {
             if (data !== undefined) {
                 availableMethods.methods.push("readDHT22Temperature");
                 availableMethods.methods.push("readDHT22Humidity");
+                availableMethods.deviceID = 2;
             }
             resolve();
         });
@@ -151,7 +154,6 @@ async function readCalculatedTemperature() {
     let t2 = Math.pow(c2, 3); // c[ln(ohm)]^3
     let temp = 1 / (a + t1 + t2); //calcualte temperature
     let tempC = temp - 273.15 - 4; //K to C
-    console.log("read TMP: " + tempC);
     return tempC;
 }
 
@@ -179,7 +181,6 @@ async function readCalculatedLux() {
     //cout << " ldrResistance: " <<  ldrResistance << "  -  ";
 
     let ldrLux = LUX_CALC_SCALAR * Math.pow(ldrResistance, LUX_CALC_EXPONENT);
-    console.log("read LUX: " + ldrLux);
     return ldrLux;
 }
 
