@@ -68,7 +68,8 @@ ioClient.on("request", async (data) => {
             console.log("got setLed req!");
             if (data !== undefined)
                 setLED(data.data);
-            ioClient.emit('responseSLED', {response: "OK", deviceID: availableMethods.deviceID});
+            let currentValue = getLED();
+            ioClient.emit('responseSLED', {response: "OK", deviceID: availableMethods.deviceID, value: currentValue});
             break;
         case "getLED":
             console.log("got readLed req!");
@@ -128,7 +129,11 @@ function setLED(state) {
 }
 
 function getLED() {
-    return led.readSync();
+    let ledStatus = led.readSync();
+    if(ledStatus === 1){
+        return true;
+    }
+    return false;
 }
 
 async function readRawTemperature() {
