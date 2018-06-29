@@ -101,7 +101,7 @@ async function detectAvailableMethods() {
     return new Promise((resolve, reject) => {
 
         availableMethods = {methods: [], deviceID: undefined};
-        availableMethods.methods.push("setLED");
+        //availableMethods.methods.push("setLED");
         availableMethods.methods.push("getLED");
         readDHT22Temperature().catch((err) => {
             availableMethods.methods.push("readCalculatedTemperature");
@@ -195,7 +195,7 @@ async function readDHT22Temperature() { // let derp = await readDHT22Temperature
             if (!err) {
                 //  console.log('temp: ' + temperature.toFixed(1) + 'C, ' +
                 //      'humidity: ' + humidity.toFixed(1) + '%');
-                resolve(temperature.toFixed(1));
+                resolve(parseFloat(temperature.toFixed(1)));
             } else {
                 console.log("Error reading DHT22! not connected? " + err);
                 reject(err);
@@ -211,7 +211,7 @@ async function readDHT22Humidity() { // let derp = await readDHT22Humidity();
             if (!err) {
                 //  console.log('temp: ' + temperature.toFixed(1) + 'C, ' +
                 //      'humidity: ' + humidity.toFixed(1) + '%');
-                resolve(humidity.toFixed(1));
+                resolve(parseFloat(humidity.toFixed(1)));
             } else {
                 console.log("Error reading DHT22! not connected? " + err);
                 reject(err);
