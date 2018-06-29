@@ -1,7 +1,7 @@
 # General
 Small iot demonstration using 2 RaspberryPi ZeroW's reading sensor data
 and propagating it to microservices - probably using socket.io.
-This is a NodeJS project using mainly Cylon.js and other node-plugins (see [package.json](package.json)).
+This is a NodeJS project: (see [package.json](package.json)).
 ![rasp-01](fritzing/rasp-01.png)
 
 ![rasp-02](fritzing/rasp-02.png)
