@@ -13,22 +13,11 @@ let availableMethods = {methods: [], deviceID: undefined};
 
 console.log("Started:");
 
-/*
-detectAvailableMethods().then(() => {
-    console.log(JSON.stringify(availableMethods));
-
-
-});
-*/
-
-
 function run() {
     if (!ioClient.connected) {
         ioClient = io.connect(serverAddress);
     }
 }
-
-//setInterval(run, 5000);
 
 let ioClient = io.connect(serverAddress);
 ioClient.on("connect", () => {
